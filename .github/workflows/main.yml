@@ -6,46 +6,48 @@ on:
     #   - main
 
 env:
-  BRANCH: ${{ github.ref.split('refs/heads/').pop() }}
-  SLUG: ${{ github.ref.split('refs/heads/').pop().toLowerCase().replace('/','-') }}
-  HEROKU_NAME: ${{ github.repository.split('/').pop().toLowerCase() }}-${{ env.SLUG }}
+  BRANCH: ${{ github.ref }}
+  REPO: ${{ github.repository }}
+  # SLUG: ${{ github.ref.split('refs/heads/').pop().toLowerCase().replace('/','-') }}
+  # HEROKU_NAME: ${{ github.repository.split('/').pop().toLowerCase() }}-${{ env.SLUG }}
   # HEROKU_SHORT_NAME: ${{ env.SLUG }}
 
 jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      # - uses: actions/checkout@v2
       - name: Create .netrc
-        run: |
-          touch .netrc
-          echo "machine api.heroku.com" >> .netrc
-          echo "  ${{ env.HEROKU_EMAIL }}" >> .netrc
-          echo "  ${{ env.HEROKU_PASSWORD }}" >> .netrc
-          echo "machine git.heroku.com" >> .netrc
-          echo "  ${{ env.HEROKU_EMAIL }}" >> .netrc
-          echo "  ${{ env.HEROKU_PASSWORD }}" >> .netrc
-      - name: Install Heroku
-        run: curl https://cli-assets.heroku.com/install.sh | sh
-      - name: Retreview all existing heroku apps
-        run: | #takes arbitrary output and stashes as env var
-          echo 'APPS_LIST<<EOF' >> $GITHUB_ENV
-          heroku apps:list >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
-      - name: Convert heroku apps list to json
-        run: |
-          echo "FORMATTED= ${{ toJSON(env.APPS_LIST) }}" >> $GITHUB_ENV
-      - name: Add git remote if app exists
-        if: ${{ contains(env.APPS_LIST, env.SLUG) }}
-        run: |
-          echo "${{ env.SLUG }}, exists, adding remote git"
-          heroku git:remote -a ${{ env.SLUG}}
-      - name: Create app if it does not exist
-        if: ${{ !contains(env.APPS_LIST, env.SLUG) }}
-        run: |
-          echo "${{ env.SLUG }}, does not exist, creating..."
-          echo "Creating ${{ env.SLUG }}..."
-          heroku apps:create ${{ env.SLUG }} --buildpack https://github.com/heroku/heroku-buildpack-static
-          heroku git:remote -a ${{ env.SLUG}}
-      - name: Deploy app
-        run: git push heroku ${{ env.BRANCH }}:main --verbose --progress
+        run: echo "${{ env.BRANCH }}, in ${{ env.REPO }}"
+      #   run: |
+      #     touch .netrc
+      #     echo "machine api.heroku.com" >> .netrc
+      #     echo "  ${{ env.HEROKU_EMAIL }}" >> .netrc
+      #     echo "  ${{ env.HEROKU_PASSWORD }}" >> .netrc
+      #     echo "machine git.heroku.com" >> .netrc
+      #     echo "  ${{ env.HEROKU_EMAIL }}" >> .netrc
+      #     echo "  ${{ env.HEROKU_PASSWORD }}" >> .netrc
+      # - name: Install Heroku
+      #   run: curl https://cli-assets.heroku.com/install.sh | sh
+      # - name: Retreview all existing heroku apps
+      #   run: | #takes arbitrary output and stashes as env var
+      #     echo 'APPS_LIST<<EOF' >> $GITHUB_ENV
+      #     heroku apps:list >> $GITHUB_ENV
+      #     echo 'EOF' >> $GITHUB_ENV
+      # - name: Convert heroku apps list to json
+      #   run: |
+      #     echo "FORMATTED= ${{ toJSON(env.APPS_LIST) }}" >> $GITHUB_ENV
+      # - name: Add git remote if app exists
+      #   if: ${{ contains(env.APPS_LIST, env.SLUG) }}
+      #   run: |
+      #     echo "${{ env.SLUG }}, exists, adding remote git"
+      #     heroku git:remote -a ${{ env.SLUG}}
+      # - name: Create app if it does not exist
+      #   if: ${{ !contains(env.APPS_LIST, env.SLUG) }}
+      #   run: |
+      #     echo "${{ env.SLUG }}, does not exist, creating..."
+      #     echo "Creating ${{ env.SLUG }}..."
+      #     heroku apps:create ${{ env.SLUG }} --buildpack https://github.com/heroku/heroku-buildpack-static
+      #     heroku git:remote -a ${{ env.SLUG}}
+      # - name: Deploy app
+      #   run: git push heroku ${{ env.BRANCH }}:main --verbose --progress
