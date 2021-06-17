@@ -6,17 +6,19 @@ on:
     #   - main
 
 env:
-  BRANCH: ${{ github.ref }}
+  BRANCH: ''
   REPO: ${{ github.repository }}
   # SLUG: ${{ github.ref.split('refs/heads/').pop().toLowerCase().replace('/','-') }}
   # HEROKU_NAME: ${{ github.repository.split('/').pop().toLowerCase() }}-${{ env.SLUG }}
   # HEROKU_SHORT_NAME: ${{ env.SLUG }}
-
 jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
       # - uses: actions/checkout@v2
+      - name: Evaluate Branch
+        if: ${{ contains(github.ref, 'refs/heads/main') }}
+        run: echo "BRANCH=main" >> $GITHUB_ENV
       - name: Create .netrc
         run: echo "${{ env.BRANCH }}, in ${{ env.REPO }}"
       #   run: |
