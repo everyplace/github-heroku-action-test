@@ -16,11 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # - uses: actions/checkout@v2
-      - name: Evaluate Branch
-        if: ${{ contains(github.ref, 'refs/heads/main') }}
-        run: echo "BRANCH=main" >> $GITHUB_ENV
-      - name: Create .netrc
-        run: echo "${{ env.BRANCH }}, in ${{ env.REPO }}"
+      # - name: Evaluate Branch
+      #   if: ${{ contains(github.ref, 'refs/heads/main') }}
+      #   run: echo "BRANCH=main" >> $GITHUB_ENV
+      # - name: Create .netrc
+      #   run: echo "${{ env.BRANCH }}, in ${{ env.REPO }}"
       - name: Remove refs/heads/
         uses: mad9000/actions-find-and-replace-string@1
         id: updateBranch
@@ -39,6 +39,15 @@ jobs:
           replace: '-'
       - name: Store formatted repo
         run: echo "REPO=${{ steps.replaceSlashes.outputs.value }}" >> $GITHUB_ENV
+      - name: Remove username
+        uses: mad9000/actions-find-and-replace-string@1
+        id: replaceUsername
+        with:
+          source: ${{ steps.replaceSlashes.outputs.value }}
+          find: '${{ github.actor }}/'
+          replace: ''      
+      - name: Store formatted repo
+        run: echo "REPO=${{ steps.replaceUsername.outputs.value }}" >> $GITHUB_ENV
       - name: Print env vars
         run: echo "Branch ${{ env.BRANCH }} in repo ${{ env.REPO }} look great."
 
