@@ -7,7 +7,7 @@ on:
 
 env:
   BRANCH: ''
-  REPO: ${{ github.repository }}
+  REPO: ''
   # SLUG: ${{ github.ref.split('refs/heads/').pop().toLowerCase().replace('/','-') }}
   # HEROKU_NAME: ${{ github.repository.split('/').pop().toLowerCase() }}-${{ env.SLUG }}
   # HEROKU_SHORT_NAME: ${{ env.SLUG }}
@@ -21,6 +21,28 @@ jobs:
         run: echo "BRANCH=main" >> $GITHUB_ENV
       - name: Create .netrc
         run: echo "${{ env.BRANCH }}, in ${{ env.REPO }}"
+      - name: Remove refs/heads/
+        uses: mad9000/actions-find-and-replace-string@1
+        id: updateBranch
+        with:
+          source: ${{ github.ref }}
+          find: 'refs/heads/'
+          replace: ''
+      - name: Store formatted Branch
+        run: echo "BRANCH=${{ steps.updateBranch.outputs.value }}" >> $GITHUB_ENV
+      - name: Format repo name
+        uses: mad9000/actions-find-and-replace-string@1
+        id: replaceSlashes
+        with:
+          source: ${{ github.repository }}
+          find: '/'
+          replace: '-'
+      - name: Store formatted repo
+        run: echo "REPO=${{ steps.replaceSlashes.outputs.value }}" >> $GITHUB_ENV
+      - name: Print env vars
+        run: echo "Branch ${{ env.BRANCH }} in repo ${{ env.REPO }} look great."
+
+
       #   run: |
       #     touch .netrc
       #     echo "machine api.heroku.com" >> .netrc
